@@ -2,46 +2,51 @@ import requests
 import os
 import random
 
-# GET SECRETS FROM GITHUB
+print("Bot started...")
+
+# 🔐 LOAD ENV VARIABLES (FROM GITHUB SECRETS)
 PAGE_ID = os.getenv("1986918968603740")
-ACCESS_TOKEN = os.getenv("EAAS5LP7cptUBRfhozuD8wtM0aZCN2WhcZCZBhvWXPLzGYX0hJ9RKjtab5ArleYaLFrj6DCYJZAlSgcSAAnZAHbbg7XjiGOQlZC6Fe3xzuA4YZCsPvjO43hVwbLXau0t3ptEIvcY2odKAlcPCSYFmsWuZCutjZCpJSUZCOZA0THkB9ZBuNy5YCq5pkNLbzRFanUMObwbXWm3r2TOwsZAbZCLg2Qxijbb2Cjzpf4Tw0M7iwqtHQcMOVQtT4NJxJ9kVMJAHEhKZBIAqdIwvGGWu61pNqcGIYPzfwc26kDK2gZDZD")
+ACCESS_TOKEN = os.getenv("EAAS5LP7cptUBRQZAUbPsIyrAzpy8ykI5Q9FH16kAbmfzxNBusHUTleIQKztOV46J9A2OptCmKfOjoMvjgQqdXvfGeX6yqd6ptQ7IQEz8o4zZCVPO17piDd7hYvCUuwe2YLtVVGT1TvMrcZBZB1Y6ZA7SDl2Ji4ZATZAqYv9kIG51NLfxMTe8sJdIl7gHQA0DZBcmggMsylzIKP8H1fHuva5nQD8mudoDZCYoG4jT5PWtqmBQwvPmA02aEsag09cowkLZC3kTPBOP9zaJKNXBeqrob0kCG5DVsHXwZDZD")
 PEXELS_API = os.getenv("XfGAoRzMzcQirEDA8U7HMseboDQKHiCc9UfqJctLu9rxMD2KJLYWGPA1")
 
-# GET IMAGE FROM PEXELS
+# 🔍 DEBUG (IMPORTANT)
+print("PAGE_ID:", "OK" if PAGE_ID else "MISSING")
+print("TOKEN:", "OK" if ACCESS_TOKEN else "MISSING")
+print("PEXELS:", "OK" if PEXELS_API else "MISSING")
+
+# ❌ STOP IF MISSING
+if not PAGE_ID or not ACCESS_TOKEN or not PEXELS_API:
+    print("Missing environment variables!")
+    exit()
+
+# 🌿 GET IMAGE FROM PEXELS
 def get_image():
-    url = "https://api.pexels.com/v1/search?query=sri lanka nature&per_page=15"
+    url = "https://api.pexels.com/v1/search?query=sri lanka nature&per_page=10"
     headers = {"Authorization": PEXELS_API}
 
-    try:
-        res = requests.get(url, headers=headers)
-        data = res.json()
+    res = requests.get(url, headers=headers)
+    data = res.json()
 
-        photos = data.get("photos", [])
-        if not photos:
-            print("No photos found")
-            return None
-
-        image = random.choice(photos)["src"]["original"]
-        return image
-
-    except Exception as e:
-        print("Error getting image:", e)
+    photos = data.get("photos", [])
+    if not photos:
         return None
 
-# GENERATE CAPTION
-def generate_caption():
+    return random.choice(photos)["src"]["original"]
+
+# ✍️ CAPTION GENERATOR
+def get_caption():
     captions = [
-        "🌿 Discover the beauty of Sri Lanka 🇱🇰 #nature #srilanka",
-        "🏝️ Paradise found in Sri Lanka 🌅 #travel #nature",
-        "🌄 Feel the calm of Sri Lanka 🍃 #beautifuldestinations",
-        "🌊 Nature vibes from Sri Lanka 🌴 #explore",
-        "🌺 Pure natural beauty 🇱🇰 #wanderlust"
+        "🌿 Beautiful Sri Lanka Nature 🇱🇰",
+        "🏝️ Paradise on Earth 🌅",
+        "🌄 Pure natural beauty of Sri Lanka 🍃",
+        "🌊 Calm and peaceful nature vibes 🌴",
+        "🌺 Explore Sri Lanka beauty 🇱🇰"
     ]
     return random.choice(captions)
 
-# POST TO FACEBOOK
+# 📤 POST TO FACEBOOK
 def post_to_facebook(image_url, caption):
-    post_url = f"https://graph.facebook.com/{PAGE_ID}/photos"
+    url = f"https://graph.facebook.com/{PAGE_ID}/photos"
 
     payload = {
         "url": image_url,
@@ -49,25 +54,15 @@ def post_to_facebook(image_url, caption):
         "access_token": ACCESS_TOKEN
     }
 
-    try:
-        res = requests.post(post_url, data=payload)
-        print("Facebook response:", res.json())
-    except Exception as e:
-        print("Error posting:", e)
+    res = requests.post(url, data=payload)
+    print("Facebook response:", res.json())
 
-# MAIN
-if __name__ == "__main__":
-    print("Bot started...")
+# 🚀 RUN BOT
+image = get_image()
 
-    if not PAGE_ID or not ACCESS_TOKEN or not PEXELS_API:
-        print("Missing environment variables!")
-        exit()
-
-    image = get_image()
-
-    if image:
-        caption = generate_caption()
-        print("Posting:", caption)
-        post_to_facebook(image, caption)
-    else:
-        print("No image to post")
+if image:
+    caption = get_caption()
+    print("Posting:", caption)
+    post_to_facebook(image, caption)
+else:
+    print("No image found")
